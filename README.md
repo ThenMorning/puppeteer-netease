@@ -8,6 +8,7 @@ koa2利用[puppeteer](https://zhaoqize.github.io/puppeteer-api-zh_CN/#/?id=%E6%A
 # Rendering
 <img src="https://github.com/WinwardZ/puppeteer-netease/blob/master/render/1.gif">
 <img src="https://github.com/WinwardZ/puppeteer-netease/blob/master/render/2.gif">
+
 # Notice
 1. 利用puppeteer爬音乐列表，你需要将其中的url改成你的url，如果是爬其他网站的音乐列表，需要更改dom查找
 2. 音乐列表拿到后，我们前往音乐下载网站 逐个下载，利用mouse event，点击下载，当前代码在 我的Mac os的chrome窗口 下完美运行，但是切换到 你的环境(windows或者Mac)，需要你自己更改点击事件的坐标，用来点击下载，我在项目中是写死的
