@@ -1,5 +1,5 @@
 const router = require('koa-router')()
-// var superagent = require('superagent'); //这三个外部依赖不要忘记npm install
+// var superagent = require('superagent'); 
 // var cheerio = require('cheerio');
 // const Nightmare = require('nightmare')
 // const nightmare = new Nightmare({
@@ -21,16 +21,17 @@ router.get('/', async (ctx, next) => {
   await page.waitFor(2000);
 
   let iframe = await page.frames().find(f => f.name() === 'contentFrame');
+  // 从iframe里面查找dom，拿到我们要的 歌曲名称和作者
   const musics = await iframe.$$eval('span.icn-share', elements => {
     const patt = /data-res-([a-z]{1,})=\"([\s\S]*?)\"/g
     const ctn = elements.reduce((total, current) => {
       var returnStr = ''
       while ((result = patt.exec(current.outerHTML)) != null) {
-        if(result[1] === 'name' || result[1] === 'author' ){
-          returnStr += ' '+ result[2]
+        if (result[1] === 'name' || result[1] === 'author') {
+          returnStr += ' ' + result[2]
         }
       }
-      return returnStr? total + '\n'  +returnStr : total
+      return returnStr ? total + '\n' + returnStr : total
     }, '');
     return ctn;
   });
@@ -42,19 +43,20 @@ router.get('/', async (ctx, next) => {
 
   // 到下载网站 下载
   let _arr = musics.split('\n');
-  for(var i=0;i<_arr.length;i++){
-    console.log('参数：' +_arr[i])
-    if(_arr[i]){
+  for (var i = 0; i < _arr.length; i++) {
+    console.log('参数：' + _arr[i])
+    if (_arr[i]) {
       await upload(_arr[i])
     }
   }
+  // 等待所有的音乐下载完毕，大概1分钟足够了，我用4g还是很快的
   await page.waitFor(60000);
 
   // 将下载到本地的音乐重命名
   // 使用jsmediatags 获取mp3文件的详细信息  title作为文件名
 
   console.log("查看 /Users/winward/Downloads/ 目录");
-  const path = '/Users/winward/Downloads/'
+  const path = '/Users/winward/Downloads/'    //  这里要改成你浏览器下载的 默认目录路径
   var files = fs.readdirSync(path);
   const musicFilePaths =
     files.filter(function (file, index) {
@@ -66,15 +68,15 @@ router.get('/', async (ctx, next) => {
         return path + musicFile
       })
   musicFilePaths.map((musicFilePath) => {
+    // 利用jsmediatags模块获取mp3文件的信息，我们只要 名称和作者就好了,重命名
     jsmediatags.read(musicFilePath, {
       onSuccess: function (tag) {
-        console.log(tag.tags);
-        fs.rename(musicFilePath,path + tag.tags.title+ ' ' + tag.tags.artist+'.mp3', function(err){
-          if(err){
-           throw err;
+        fs.rename(musicFilePath, path + tag.tags.title + ' ' + tag.tags.artist + '.mp3', function (err) {
+          if (err) {
+            console.error(error);
+            throw err;
           }
-          console.log('done!');
-         })
+        })
       },
       onError: function (error) {
         console.log(':(', error.type, error.info);
@@ -101,19 +103,19 @@ router.get('/', async (ctx, next) => {
       })
       return links;
     }, sel);
-    
-    try{
+
+    try {
       await page.goto(hrefs[0])
-      console.log('href: '+hrefs[0])
+      console.log('href: ' + hrefs[0])
       await page.waitFor(2000);
       await page.mouse.click(535, 350);
       await page.mouse.click(534, 350);
-    }catch(error){
-      console.error('href: '+hrefs[0])
+    } catch (error) {
+      console.error('href: ' + hrefs[0])
     }
-    
-  }
 
+  }
+  console.log('任务执行完毕')
   // await browser.close();
 })
 
